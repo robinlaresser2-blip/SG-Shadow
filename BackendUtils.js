@@ -131,8 +131,44 @@ async autoPopulateSharedData() {
     }
 
     if (SharedData.Animations_v2?.length > 0) {
-      await
-  async checkOnlineUsers() {
+      await this.collections.Animations.deleteMany({});
+
+      for (const anim of SharedData.Animations_v2) {
+        await this.collections.Animations.insertOne({
+          ...anim
+        });
+      }
+    }
+
+    if (SharedData.Emotes_v2?.length > 0) {
+      await this.collections.Emotes.deleteMany({});
+
+      for (const emote of SharedData.Emotes_v2) {
+        await this.collections.Emotes.insertOne({
+          ...emote
+        });
+      }
+    }
+
+    if (SharedData.Footsteps_v2?.length > 0) {
+      await this.collections.Footsteps.deleteMany({});
+
+      for (const footstep of SharedData.Footsteps_v2) {
+        await this.collections.Footsteps.insertOne({
+          ...footstep
+        });
+      }
+    }
+  } catch (error) {
+    Console.error(
+      "Populate",
+      "Erro ao popular coleções:",
+      error
+    );
+  }
+}
+
+async checkOnlineUsers() {
   const minuto = 15 * 60 * 1000
   const now = new Date()
 
