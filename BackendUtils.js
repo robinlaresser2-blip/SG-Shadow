@@ -43,7 +43,8 @@ class Database {
       TournamentsX: null,
       Anticheat: null,
       Parties: null,
-      CreatorCodes: null
+      CreatorCodes: null,
+      Clubs: null
     };
   }
 
