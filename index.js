@@ -522,6 +522,18 @@ app.post('/party/invite', async (req, res) => {
         )
       )
     );
+        return res.status(200).json({
+      ok: true
+    });
+
+  } catch (err) {
+    Console.error("Party", "invite error:", err);
+
+    return res.status(500).json({
+      error: "internal error"
+    });
+  }
+});
     
 app.post('/party/invite', async (req, res) => {
   try {
