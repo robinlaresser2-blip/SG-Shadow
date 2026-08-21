@@ -6,7 +6,7 @@ const rateLimit = require("express-rate-limit");
 const Console = require("./ConsoleUtils");
 const CryptoUtils = require("./CryptoUtils");
 const SharedUtils = require("./SharedUtils");
-
+const ClubController = require("./ClubController");
 const {
   BackendUtils,
   database,
@@ -465,6 +465,64 @@ app.get('/friends/request', FriendsController.pending);
 app.post('/friends/block', FriendsController.block);
 app.post('/friends/unblock', FriendsController.unblock);
 
+// ============================================
+// CLUB SYSTEM
+// ============================================
+
+app.post("/clubs/create", ClubController.create);
+
+app.get("/clubs/search", ClubController.search);
+
+app.get("/clubs/me", ClubController.mine);
+
+app.get("/clubs/:clubId", ClubController.get);
+
+app.get("/clubs/:clubId/members", ClubController.members);
+
+app.post("/clubs/:clubId/join", ClubController.join);
+
+app.post("/clubs/:clubId/leave", ClubController.leave);
+
+app.patch("/clubs/:clubId", ClubController.update);
+
+app.delete("/clubs/:clubId", ClubController.remove);
+
+
+// ============================================
+// PARTY
+// ============================================
+
+app.post('/party/invite', async (req, res) => {
+  try {
+    const sender = req.user;
+    const { UserIds, PhotonAppId, PhotonRoomCode, PhotonRegion, EventId } = req.body || {};
+
+    if (!Array.isArray(UserIds) || UserIds.length === 0 || !PhotonRoomCode) {
+      return res.status(400).json({
+        error: "missing UserIds or PhotonRoomCode"
+      });
+    }
+
+    const payload = {
+      UserId: sender.id,
+      RoomCode: PhotonRoomCode,
+      PhotonRegion: PhotonRegion || "",
+      PhotonAppId: PhotonAppId || "",
+      PartyContext: EventId
+        ? { "game-event-id": EventId }
+        : {},
+    };
+
+    await Promise.all(
+      UserIds.map((targetId) =>
+        pusherTrigger(
+          `private-user-${targetId}`,
+          "stumble:v0:party_invite",
+          payload
+        )
+      )
+    );
+    
 app.post('/party/invite', async (req, res) => {
   try {
     const sender = req.user;
