@@ -48,27 +48,29 @@ class Database {
     };
   }
 
-  async connect() {
-    this.client = new MongoClient(this.mongoUri);
-    await this.client.connect();
-    this.db = this.client.db(this.dbName);
+async connect() {
+  this.client = new MongoClient(this.mongoUri);
+  await this.client.connect();
+  this.db = this.client.db(this.dbName);
 
-    this.collections.Users = this.db.collection("Users");
-    this.collections.Analytics = this.db.collection("Analytics");
-    this.collections.News = this.db.collection("News");
-    this.collections.Events = this.db.collection("Events");
-    this.collections.BattlePasses = this.db.collection("BattlePasses");
-    this.collections.Skins = this.db.collection("Skins");
-    this.collections.Missions = this.db.collection("Missions");
-    this.collections.PurchasableItems = this.db.collection("PurchasableItems");
-    this.collections.Animations = this.db.collection("Animations");
-    this.collections.Emotes = this.db.collection("Emotes");
-    this.collections.Footsteps = this.db.collection("Footsteps");
-    this.collections.TournamentsX = this.db.collection("TournamentsX");
-    this.collections.Anticheat = this.db.collection("Anticheat");
-    this.collections.Parties = this.db.collection("Parties");
-    this.collections.CreatorCodes = this.db.collection("CreatorCodes");
+  this.collections.Users = this.db.collection("Users");
+  this.collections.Analytics = this.db.collection("Analytics");
+  this.collections.News = this.db.collection("News");
+  this.collections.Events = this.db.collection("Events");
+  this.collections.BattlePasses = this.db.collection("BattlePasses");
+  this.collections.Skins = this.db.collection("Skins");
+  this.collections.Missions = this.db.collection("Missions");
+  this.collections.PurchasableItems = this.db.collection("PurchasableItems");
+  this.collections.Animations = this.db.collection("Animations");
+  this.collections.Emotes = this.db.collection("Emotes");
+  this.collections.Footsteps = this.db.collection("Footsteps");
+  this.collections.TournamentsX = this.db.collection("TournamentsX");
+  this.collections.Anticheat = this.db.collection("Anticheat");
+  this.collections.Parties = this.db.collection("Parties");
+  this.collections.CreatorCodes = this.db.collection("CreatorCodes");
 
+  // CLUB SYSTEM
+  this.collections.Clubs = this.db.collection("Clubs");
     await this.checkOnlineUsers()
     await this.createIndexes();
     await this.autoPopulateSharedData();
@@ -76,56 +78,41 @@ class Database {
     Console.log("Database", "Connected to database");
   }
 
-  async createIndexes() {
-    await this.collections.Users.createIndexes([
-      { key: { deviceId: 1 }, unique: true, sparse: true },
-      { key: { stumbleId: 1 }, unique: true, sparse: true },
-      { key: { username: 1 }, unique: true, sparse: true },
-      { key: { friends: 1 } },
-      { key: { sentFriendRequests: 1 } },
-      { key: { receivedFriendRequests: 1 } },
-      { key: { "balances.name": 1 } }
-    ]);
+async createIndexes() {
+  await this.collections.Users.createIndexes([
+    { key: { deviceId: 1 }, unique: true, sparse: true },
+    { key: { stumbleId: 1 }, unique: true, sparse: true },
+    { key: { username: 1 }, unique: true, sparse: true },
+    { key: { friends: 1 } },
+    { key: { sentFriendRequests: 1 } },
+    { key: { receivedFriendRequests: 1 } },
+    { key: { "balances.name": 1 } }
+  ]);
 
-    await this.collections.Events.createIndex({ StartDateTime: 1, EndDateTime: 1 });
-    await this.collections.BattlePasses.createIndex({ PassID: 1 });
-    await this.collections.Skins.createIndex({ SkinID: 1 });
-  }
+  await this.collections.Events.createIndex({
+    StartDateTime: 1,
+    EndDateTime: 1
+  });
 
-  async autoPopulateSharedData() {
-    try {
-      if (SharedData.Skins_v4?.length > 0) {
-        await this.collections.Skins.deleteMany({});
-        for (const skin of SharedData.Skins_v4) {
-          await this.collections.Skins.insertOne({ ...skin });
-        }
-      }
+  await this.collections.BattlePasses.createIndex({
+    PassID: 1
+  });
 
-      if (SharedData.Animations_v2?.length > 0) {
-        await this.collections.Animations.deleteMany({});
-        for (const anim of SharedData.Animations_v2) {
-          await this.collections.Animations.insertOne({ ...anim });
-        }
-      }
+  await this.collections.Skins.createIndex({
+    SkinID: 1
+  });
 
-      if (SharedData.Emotes_v2?.length > 0) {
-        await this.collections.Emotes.deleteMany({});
-        for (const emote of SharedData.Emotes_v2) {
-          await this.collections.Emotes.insertOne({ ...emote });
-        }
-      }
+  // ============================================
+  // CLUB SYSTEM
+  // ============================================
 
-      if (SharedData.Footsteps?.length > 0) {
-        await this.collections.Footsteps.deleteMany({});
-        for (const footstep of SharedData.Footsteps_v2) {
-          await this.collections.Footsteps.insertOne({ ...footstep });
-        }
-      }
-    } catch (error) {
-      Console.error("Populate", "Erro ao popular coleções:", error);
-    }
-  }
-
+  await this.collections.Clubs.createIndexes([
+    { key: { clubId: 1 }, unique: true },
+    { key: { name: 1 } },
+    { key: { ownerId: 1 } },
+    { key: { "members.userId": 1 } }
+  ]);
+}
   async checkOnlineUsers() {
   const minuto = 15 * 60 * 1000
   const now = new Date()
