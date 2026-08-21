@@ -69,14 +69,18 @@ async connect() {
   this.collections.Parties = this.db.collection("Parties");
   this.collections.CreatorCodes = this.db.collection("CreatorCodes");
 
+  // ============================================
   // CLUB SYSTEM
-  this.collections.Clubs = this.db.collection("Clubs");
-    await this.checkOnlineUsers()
-    await this.createIndexes();
-    await this.autoPopulateSharedData();
+  // ============================================
 
-    Console.log("Database", "Connected to database");
-  }
+  this.collections.Clubs = this.db.collection("Clubs");
+
+  await this.checkOnlineUsers();
+  await this.createIndexes();
+  await this.autoPopulateSharedData();
+
+  Console.log("Database", "Connected to database");
+}
 
 async createIndexes() {
   await this.collections.Users.createIndexes([
@@ -113,6 +117,21 @@ async createIndexes() {
     { key: { "members.userId": 1 } }
   ]);
 }
+
+async autoPopulateSharedData() {
+  try {
+    if (SharedData.Skins_v4?.length > 0) {
+      await this.collections.Skins.deleteMany({});
+
+      for (const skin of SharedData.Skins_v4) {
+        await this.collections.Skins.insertOne({
+          ...skin
+        });
+      }
+    }
+
+    if (SharedData.Animations_v2?.length > 0) {
+      await
   async checkOnlineUsers() {
   const minuto = 15 * 60 * 1000
   const now = new Date()
